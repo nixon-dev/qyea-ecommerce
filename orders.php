@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+    <link rel="manifest" href="assets/site.webmanifest">
+
+    <title>Orders - QYEA Store</title>
+
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/fixedheader/4.0.1/css/fixedHeader.bootstrap5.css" rel="stylesheet">
+    <link href="assets/css/animate.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="fixed-sidebar full-height-layout skin-2">
+
+    <div id="wrapper">
+
+        <?php session_start(); ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] == "Administrator"): ?>
+            <?php include("base/sidebar.php"); ?>
+        <?php elseif (isset($_SESSION['role']) && $_SESSION['role'] == "Staff"): ?>
+            <?php include("base/staff-sidebar.php"); ?>
+        <?php else: ?>
+            <?php include("base/user-sidebar.php"); ?>
+        <?php endif; ?>
+        <?php include("inc/dashboard_query.php"); ?>
+        <div id="page-wrapper" class="gray-bg">
+            <?php include("base/navbar.php"); ?>
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-sm-4">
+                    <h2>Orders</h2>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="dashboard">QYEA</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            Orders
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong>List</strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-sm-8">
+                    <div class="title-action">
+
+                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                            <a href="add-orders" class="btn btn-primary">Add Order</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wrapper wrapper-content animated fadeInRight">
+
+                <?php if (!empty($_GET['error'])): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?php echo $_GET['error']; ?>
+                    </div>
+                <?php elseif (!empty($_GET['message'])): ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo $_GET['message']; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox ">
+                            <div class="ibox-title">
+                                <h5>Orders</h5>
+                                <div class="ibox-tools">
+                                    <a class="collapse-link">
+                                        <i class="fa fa-chevron-up"></i>
+                                    </a>
+                                    <a class="close-link">
+                                        <i class="fa fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="ibox-content">
+
+                                <div class="table-responsive">
+                                    <table
+                                        class="table table-striped table-bordered table-hover nowrap dataTables-orders">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                    <th>Customer Name</th>
+                                                <?php endif; ?>
+                                                <th>Product Name</th>
+                                                <th>Amount</th>
+                                                <th>Total Price</th>
+                                                <th>Status</th>
+                                                <th>Shipping Status</th>
+                                                <th class="text-center">Manage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php include("inc/fetch_orders.php"); ?>
+                                            <?php foreach ($orders as $o): ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php
+                                                        $date = new DateTime($o['order_date']);
+                                                        echo $date->format('F d, Y');
+                                                        ?>
+                                                    </td>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <td><?php echo $o['name']; ?></td>
+                                                    <?php endif; ?>
+                                                    <td><?php echo $o['product_name']; ?></td>
+                                                    <td class="text-center"><?php echo $o['order_amount']; ?></td>
+                                                    <td class="text-right">
+                                                        ₱<?php echo number_format($o['order_bill_total'], 2); ?></td>
+                                                    <td><?php echo $o['order_status']; ?></td>
+                                                    <td><?php echo $o['shipping_status']; ?></td>
+
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <td class="text-center footable-visible footable-last-column">
+                                                            <div class="btn-group">
+                                                                <a class="btn-info btn btn-xs"
+                                                                    href="manage-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                        class="fa-solid fa-pencil"></i> </a>&nbsp;
+                                                            </div>
+                                                        </td>
+                                                    <?php else: ?>
+                                                        <td class="text-right footable-visible footable-last-column">
+                                                            <div class="btn-group">
+                                                                <a class="btn-success btn btn-xs"
+                                                                    href="view-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                        class="fa-solid fa-eye"></i> </a>&nbsp;
+                                                            </div>
+                                                        </td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <th>Customer Name</th>
+                                                    <?php endif; ?>
+                                                    <th>Product Name</th>
+                                                    <th>Amount</th>
+                                                    <th>Total Price</th>
+                                                    <th>Status</th>
+                                                    <th>Shipping Status</th>
+                                                    <th class="text-center">Manage</th>
+                                                </tr>
+                                            </tfoot>
+                                        <?php endif; ?>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Start of Completed Orders Tables-->
+                <?php if ($_SESSION['role'] == "Customer"): ?>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox ">
+                                <div class="ibox-title">
+                                    <h5>Completed Orders</h5>
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+
+                                    <div class="table-responsive">
+                                        <table
+                                            class="table table-striped table-bordered table-hover nowrap dataTables-completed-orders">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <th>Customer Name</th>
+                                                    <?php endif; ?>
+                                                    <th>Product Name</th>
+                                                    <th>Amount</th>
+                                                    <th>Total Price</th>
+                                                    <th>Status</th>
+                                                    <th>Shipping Status</th>
+                                                    <th class="text-center">Manage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php include("inc/fetch_orders.php"); ?>
+                                                <?php foreach ($completed_orders as $o): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <?php
+                                                            $date = new DateTime($o['order_date']);
+                                                            echo $date->format('F d, Y');
+                                                            ?>
+                                                        </td>
+                                                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                            <td><?php echo $o['name']; ?></td>
+                                                        <?php endif; ?>
+                                                        <td><?php echo $o['product_name']; ?></td>
+                                                        <td class="text-center"><?php echo $o['order_amount']; ?></td>
+                                                        <td class="text-right">
+                                                            ₱<?php echo number_format($o['order_bill_total'], 2); ?></td>
+                                                        <td><?php echo $o['order_status']; ?></td>
+                                                        <td><?php echo $o['shipping_status']; ?></td>
+
+                                                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                            <td class="text-center footable-visible footable-last-column">
+                                                                <div class="btn-group">
+                                                                    <a class="btn-info btn btn-xs"
+                                                                        href="manage-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                            class="fa-solid fa-pencil"></i> </a>&nbsp;
+                                                                </div>
+                                                            </td>
+                                                        <?php else: ?>
+                                                            <td class="text-right footable-visible footable-last-column">
+                                                                <div class="btn-group">
+                                                                    <a class="btn-success btn btn-xs"
+                                                                        href="view-completed-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                            class="fa-solid fa-eye"></i> </a>&nbsp;
+                                                                </div>
+                                                            </td>
+                                                        <?php endif; ?>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <th>Customer Name</th>
+                                                    <?php endif; ?>
+                                                    <th>Product Name</th>
+                                                    <th>Amount</th>
+                                                    <th>Total Price</th>
+                                                    <th>Status</th>
+                                                    <th>Shipping Status</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <!-- End of Completed Order Table -->
+
+                <!-- Start of Canceled Orders Tables-->
+                <?php if ($_SESSION['role'] == "Customer"): ?>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox ">
+                                <div class="ibox-title">
+                                    <h5>Canceled Orders</h5>
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+
+                                    <div class="table-responsive">
+                                        <table
+                                            class="table table-striped table-bordered table-hover nowrap dataTables-canceled-orders">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <th>Customer Name</th>
+                                                    <?php endif; ?>
+                                                    <th>Product Name</th>
+                                                    <th>Amount</th>
+                                                    <th>Total Price</th>
+                                                    <th>Status</th>
+                                                    <th>Shipping Status</th>
+                                                    <th class="text-center">Manage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php include("inc/fetch_orders.php"); ?>
+                                                <?php foreach ($canceled_orders as $o): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <?php
+                                                            $date = new DateTime($o['order_date']);
+                                                            echo $date->format('F d, Y');
+                                                            ?>
+                                                        </td>
+                                                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                            <td><?php echo $o['name']; ?></td>
+                                                        <?php endif; ?>
+                                                        <td><?php echo $o['product_name']; ?></td>
+                                                        <td class="text-center"><?php echo $o['order_amount']; ?></td>
+                                                        <td class="text-right">
+                                                            ₱<?php echo number_format($o['order_bill_total'], 2); ?></td>
+                                                        <td><?php echo $o['order_status']; ?></td>
+                                                        <td><?php echo $o['shipping_status']; ?></td>
+
+                                                        <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                            <td class="text-center footable-visible footable-last-column">
+                                                                <div class="btn-group">
+                                                                    <a class="btn-info btn btn-xs"
+                                                                        href="manage-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                            class="fa-solid fa-pencil"></i> </a>&nbsp;
+                                                                </div>
+                                                            </td>
+                                                        <?php else: ?>
+                                                            <td class="text-right footable-visible footable-last-column">
+                                                                <div class="btn-group">
+                                                                    <a class="btn-success btn btn-xs"
+                                                                        href="view-order.php?id=<?php echo $o['order_id']; ?>"><i
+                                                                            class="fa-solid fa-eye"></i> </a>&nbsp;
+                                                                </div>
+                                                            </td>
+                                                        <?php endif; ?>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <?php if ($_SESSION['role'] == "Administrator" || $_SESSION['role'] == "Staff"): ?>
+                                                        <th>Customer Name</th>
+                                                    <?php endif; ?>
+                                                    <th>Product Name</th>
+                                                    <th>Amount</th>
+                                                    <th>Total Price</th>
+                                                    <th>Status</th>
+                                                    <th>Shipping Status</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <!-- End of Canceled Order Table -->
+
+
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <!-- Mainly scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="assets/js/popper.min.js"></script>
+    <script src="assets/js/bootstrap.js"></script>
+    <script src="assets/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="assets/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="https://kit.fontawesome.com/5a839d378a.js" crossorigin="anonymous"></script>
+    <!-- Custom and plugin javascript -->
+    <script src="assets/js/inspinia.js"></script>
+    <script src="assets/js/plugins/pace/pace.min.js"></script>
+
+    <script src="assets/js/plugins/dataTables/datatables.min.js"></script>
+    <script>
+
+        // Upgrade button class name
+        $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn btn-white btn-sm';
+
+        $(document).ready(function () {
+            $('.dataTables-orders').DataTable({
+                pageLength: 10,
+                order: [],
+                responsive: true,
+                fixedHeader: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy' },
+                    { extend: 'csv' },
+                    { extend: 'excel', title: 'Orders' },
+                    { extend: 'pdf', title: 'Orders' },
+
+                    {
+                        extend: 'print',
+                        customize: function (win) {
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', 'inherit');
+                        }
+                    }
+                ],
+                initComplete: function () {
+                    this.api()
+                        .columns([0, 1, 2, 5, 6])
+                        .every(function () {
+                            var column = this;
+
+                            // Create select element and listener
+                            var select = $('<select><option value=""></option></select>')
+                                .appendTo($(column.footer()).empty())
+                                .on('change', function () {
+                                    column
+                                        .search($(this).val(), { exact: true })
+                                        .draw();
+                                });
+
+                            // Add list of options
+                            column
+                                .data()
+                                .unique()
+                                .sort()
+                                .each(function (d, j) {
+                                    select.append(
+                                        '<option value="' + d + '">' + d + '</option>'
+                                    );
+                                });
+                        });
+                }
+
+            });
+
+
+
+        });
+
+        $(document).ready(function () {
+            $('.dataTables-completed-orders').DataTable({
+                pageLength: 10,
+                order: [],
+                responsive: true,
+                fixedHeader: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy' },
+                    { extend: 'csv' },
+                    { extend: 'excel', title: 'Orders' },
+                    { extend: 'pdf', title: 'Orders' },
+
+                    {
+                        extend: 'print',
+                        customize: function (win) {
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', 'inherit');
+                        }
+                    }
+                ]
+
+            });
+
+        });
+
+        $(document).ready(function () {
+            $('.dataTables-canceled-orders').DataTable({
+                pageLength: 10,
+                order: [],
+                responsive: true,
+                fixedHeader: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    { extend: 'copy' },
+                    { extend: 'csv' },
+                    { extend: 'excel', title: 'Orders' },
+                    { extend: 'pdf', title: 'Orders' },
+
+                    {
+                        extend: 'print',
+                        customize: function (win) {
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', 'inherit');
+                        }
+                    }
+                ]
+
+            });
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+<ul class="nav navbar-nav navbar-right">
+    <li><a class="nav-link page-scroll" href="#page-top">Home</a></li>
+    <li><a class="nav-link page-scroll" href="about">About</a></li>
+    <li><a class="nav-link" href="shop#shop">Shop</a></li>
+    <?php session_start(); ?>
+    <?php if (empty($_SESSION['id'])): ?>
+        <li><a class="nav-link" href="login">Login</a></li>
+    <?php elseif (!empty($_SESSION['id']) && ($_SESSION['role'] != 'Customer')): ?>
+        <li><a class="nav-link" href="/dashboard">Dashboard</a></li>
+        <li><a class="nav-link" href="inc/logout">Logout</a></li>
+    <?php else: ?>
+        <li><a class="nav-link" href="/orders">Orders</a></li>
+        <li><a class="nav-link" href="inc/logout">Logout</a></li>
+    <?php endif; ?>
+</ul>
